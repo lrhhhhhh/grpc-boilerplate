@@ -20,6 +20,16 @@ gen:
 	echo protoc=$(PROTOC)
 	$(PROTOC) --go_out=. --go-grpc_out=. proto/hello.proto
 
+.PHONY:
+tls:
+	mkdir -p tls && \
+	cd tls && \
+	openssl genrsa -out grpc.key 2048 && \
+	openssl req -new -x509 -key grpc.key -out grpc.crt -days 36500 && \
+	openssl req -new -key grpc.key -out grpc.csr && \
+	openssl genpkey -algorithm RSA -out t.key && \
+	openssl req -new -nodes -key t.key -out t.csr -days 3650 -subj "/C=cn/OU=myorg/O=mycomp/CN=myname" -config openssl.cnf -extensions v3_req && \
+	openssl x509 -req -days 3650 -in t.csr -out server.pem -CA grpc.crt -CAkey grpc.key -CAcreateserial -extfile openssl.cnf -extensions v3_req
 
 
 

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"grpc-demo/interceptor"
 	pb "grpc-demo/pb"
@@ -110,6 +111,12 @@ func main() {
 	host := "127.0.0.1:9090"
 	creds := insecure.NewCredentials()
 	helloInterceptor := new(interceptor.HelloInterceptor)
+
+	creds, err := credentials.NewClientTLSFromFile("./tls/server.pem", "*.liuronghao.com")
+	if err != nil {
+		panic(err)
+	}
+
 	conn, err := grpc.Dial(
 		host,
 		grpc.WithTransportCredentials(creds),

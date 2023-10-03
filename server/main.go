@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 	"grpc-demo/interceptor"
 	pb "grpc-demo/pb"
@@ -101,7 +101,10 @@ func (s *HelloService) BiDirectionalStreamPing(stream pb.Hello_BiDirectionalStre
 
 func main() {
 	listen, _ := net.Listen("tcp", ":9090")
-	creds := insecure.NewCredentials()
+	creds, err := credentials.NewServerTLSFromFile("./tls/server.pem", "./tls/t.key")
+	if err != nil {
+		panic(err)
+	}
 
 	helloInterceptor := new(interceptor.HelloInterceptor)
 
