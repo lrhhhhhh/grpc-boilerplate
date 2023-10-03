@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+	"grpc-demo/interceptor"
 	pb "grpc-demo/pb"
 	"log"
 	"math/rand"
@@ -101,9 +102,15 @@ func (s *HelloService) BiDirectionalStreamPing(stream pb.Hello_BiDirectionalStre
 func main() {
 	listen, _ := net.Listen("tcp", ":9090")
 	creds := insecure.NewCredentials()
+
+	helloInterceptor := new(interceptor.HelloInterceptor)
+
 	grpcServer := grpc.NewServer(
 		grpc.Creds(creds),
+		grpc.UnaryInterceptor(helloInterceptor.Unary()),
+		grpc.StreamInterceptor(helloInterceptor.Stream()),
 	)
+
 	helloService := new(HelloService)
 	pb.RegisterHelloServer(grpcServer, helloService)
 

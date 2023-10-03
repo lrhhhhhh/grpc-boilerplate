@@ -4,6 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"grpc-demo/interceptor"
 	pb "grpc-demo/pb"
 	"log"
 	"math/rand"
@@ -108,9 +109,11 @@ func biDirectionalStream(client pb.HelloClient) {
 func main() {
 	host := "127.0.0.1:9090"
 	creds := insecure.NewCredentials()
+	helloInterceptor := new(interceptor.HelloInterceptor)
 	conn, err := grpc.Dial(
 		host,
 		grpc.WithTransportCredentials(creds),
+		grpc.WithUnaryInterceptor(helloInterceptor.UnaryClient()),
 	)
 	if err != nil {
 		panic(err)
