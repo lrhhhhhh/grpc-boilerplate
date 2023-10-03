@@ -18,7 +18,7 @@ PROTOC := $(shell pwd)/protoc/bin/protoc
 .PHONY:
 gen:
 	echo protoc=$(PROTOC)
-	$(PROTOC) --go_out=. --go-grpc_out=. proto/hello.proto
+	$(PROTOC) --proto_path=proto proto/*.proto --go_out=. --go-grpc_out=. --grpc-gateway_out=. --openapiv2_out=./swagger
 
 .PHONY:
 tls:
@@ -46,6 +46,23 @@ down:
 rm:
 	cd deployments/docker-compose && sudo rm -rf etcd
 
+.PHONY:
+server:
+	go run cmd/server/main.go
 
+.PHONY:
+gateway:
+	go run cmd/grpc-gateway/main.go
 
+.PHONY:
+test:
+	go run cmd/client/main.go
 
+.PHONY:
+test_unary_rpc_rest:
+	# 需要先启动etcd、grpc server 和 grpc gateway
+	curl -X POST -H "Content-Type: application/json" -d  '{"msg":{"fromUsername":"1","toUsername":"2","content":"3"}}' http://localhost:9091/v1/example/hello
+
+.PHONY:
+test_server_stream_rest:
+	curl -X POST -H "Content-Type: application/json" -d  '{"TimeStamp": 12314125}' http://localhost:9091/v1/example/hello-server-stream

@@ -1,13 +1,23 @@
 syntax = "proto3";
-
+package helloService;
 option go_package = "./pb;helloService";
 
-package helloService;
+import "google/api/annotations.proto";
 
 service Hello {
-  rpc Hello(HelloRequest) returns (HelloReply);
+  rpc Hello(HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/example/hello"
+      body: "*"
+    };
+  }
   rpc ClientStreamPing(stream PingRequest) returns (PingReply);
-  rpc ServerStreamPing(PingRequest) returns (stream PingReply);
+  rpc ServerStreamPing(PingRequest) returns (stream PingReply) {
+    option (google.api.http) = {
+      post: "/v1/example/hello-server-stream"
+      body: "*"
+    };
+  }
   rpc BiDirectionalStreamPing(stream PingRequest) returns (stream PingReply);
 }
 

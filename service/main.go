@@ -1,17 +1,12 @@
-package main
+package service
 
 import (
 	"context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
-	"grpc-demo/etcd"
-	"grpc-demo/interceptor"
 	pb "grpc-demo/pb"
 	"log"
 	"math/rand"
-	"net"
 	"time"
 )
 
@@ -98,43 +93,4 @@ func (s *HelloService) BiDirectionalStreamPing(stream pb.Hello_BiDirectionalStre
 		}
 	}
 	return err
-}
-
-func main() {
-	serviceName := "grpc-helloService"
-	addr := "0.0.0.0:9090"
-	listen, err := net.Listen("tcp", addr)
-	if err != nil {
-		panic(err)
-	}
-
-	creds, err := credentials.NewServerTLSFromFile("./tls/server.pem", "./tls/t.key")
-	if err != nil {
-		panic(err)
-	}
-
-	helloInterceptor := new(interceptor.HelloInterceptor)
-
-	grpcServer := grpc.NewServer(
-		grpc.Creds(creds),
-		grpc.UnaryInterceptor(helloInterceptor.Unary()),
-		grpc.StreamInterceptor(helloInterceptor.Stream()),
-	)
-
-	helloService := new(HelloService)
-	pb.RegisterHelloServer(grpcServer, helloService)
-
-	etcdAddr := "http://localhost:2379"
-	etcdConn, err := etcd.New(etcdAddr)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := etcdConn.Register(serviceName, addr); err != nil {
-		panic(err)
-	}
-
-	if err := grpcServer.Serve(listen); err != nil {
-		panic(err)
-	}
 }
