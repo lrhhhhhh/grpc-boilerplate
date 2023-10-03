@@ -31,6 +31,20 @@ tls:
 	openssl req -new -nodes -key t.key -out t.csr -days 3650 -subj "/C=cn/OU=myorg/O=mycomp/CN=myname" -config openssl.cnf -extensions v3_req && \
 	openssl x509 -req -days 3650 -in t.csr -out server.pem -CA grpc.crt -CAkey grpc.key -CAcreateserial -extfile openssl.cnf -extensions v3_req
 
+.PHONY:
+up:
+	cd deployments/docker-compose && \
+	mkdir -p -m 0777 etcd/data && \
+	docker-compose up
+
+.PHONY:
+down:
+	cd deployments/docker-compose && \
+	docker-compose down
+
+.PHONY:
+rm:
+	cd deployments/docker-compose && sudo rm -rf etcd
 
 
 

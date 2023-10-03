@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
+	"grpc-demo/etcd"
 	"grpc-demo/interceptor"
 	pb "grpc-demo/pb"
 	"log"
@@ -100,7 +101,13 @@ func (s *HelloService) BiDirectionalStreamPing(stream pb.Hello_BiDirectionalStre
 }
 
 func main() {
-	listen, _ := net.Listen("tcp", ":9090")
+	serviceName := "grpc-helloService"
+	addr := "0.0.0.0:9090"
+	listen, err := net.Listen("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+
 	creds, err := credentials.NewServerTLSFromFile("./tls/server.pem", "./tls/t.key")
 	if err != nil {
 		panic(err)
@@ -116,6 +123,16 @@ func main() {
 
 	helloService := new(HelloService)
 	pb.RegisterHelloServer(grpcServer, helloService)
+
+	etcdAddr := "http://localhost:2379"
+	etcdConn, err := etcd.New(etcdAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := etcdConn.Register(serviceName, addr); err != nil {
+		panic(err)
+	}
 
 	if err := grpcServer.Serve(listen); err != nil {
 		panic(err)

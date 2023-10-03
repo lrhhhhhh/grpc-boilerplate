@@ -1,0 +1,12 @@
+version: "3"
+services:
+  etcd:
+    image: bitnami/etcd:3.5.9
+    container_name: etcd
+    restart: always
+    volumes:
+      - "./etcd/data:/bitnami/etcd/data"
+    ports:
+      - "2379:2379"
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes                       # 允许不用密码登录
