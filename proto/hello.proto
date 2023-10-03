@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = "./pb;helloService";
+
+package helloService;
+
+service Hello {
+  rpc Hello(HelloRequest) returns (HelloReply);
+  rpc ClientStreamPing(stream PingRequest) returns (PingReply);
+  rpc ServerStreamPing(PingRequest) returns (stream PingReply);
+  rpc BiDirectionalStreamPing(stream PingRequest) returns (stream PingReply);
+}
+
+message Message {
+  string fromUsername = 1;
+  string toUsername = 2;
+  string content = 3;
+}
+
+message HelloRequest {
+  Message msg = 1;
+}
+
+message HelloReply {
+  string content = 1;
+}
+
+message PingRequest {
+  int64 timestamp = 1;
+}
+
+message PingReply {
+  int64 timestamp = 1;
+}
+
+message NumPing {
+  int64 cnt = 1;
+}
+
