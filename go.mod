@@ -1,4 +1,4 @@
-module grpc-demo
+module grpc-boilerplate
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0

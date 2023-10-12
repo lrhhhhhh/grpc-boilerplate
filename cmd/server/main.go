@@ -3,10 +3,10 @@ package main
 import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"grpc-demo/etcd"
-	"grpc-demo/interceptor"
-	pb "grpc-demo/pb"
-	"grpc-demo/service"
+	pb "grpc-boilerplate/api/pb"
+	"grpc-boilerplate/etcd"
+	"grpc-boilerplate/interceptor"
+	"grpc-boilerplate/internal/logic"
 	"net"
 )
 
@@ -31,7 +31,7 @@ func main() {
 		grpc.StreamInterceptor(helloInterceptor.Stream()),
 	)
 
-	helloService := new(service.HelloService)
+	helloService := new(logic.HelloService)
 	pb.RegisterHelloServer(grpcServer, helloService)
 
 	etcdAddr := "http://localhost:2379"

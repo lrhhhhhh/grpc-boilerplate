@@ -1,10 +1,10 @@
-package service
+package logic
 
 import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	pb "grpc-demo/pb"
+	pb "grpc-boilerplate/api/pb"
 	"log"
 	"math/rand"
 	"time"

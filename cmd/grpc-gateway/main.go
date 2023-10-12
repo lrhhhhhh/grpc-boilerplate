@@ -5,8 +5,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	pb "grpc-demo/pb"
-	"grpc-demo/service"
+	pb "grpc-boilerplate/api/pb"
+	"grpc-boilerplate/internal/logic"
 	"net"
 	"net/http"
 )
@@ -30,7 +30,7 @@ func main() {
 	if onlyUnaryRPC {
 		// in-process
 		// only for unary rpc
-		helloService := new(service.HelloService)
+		helloService := new(logic.HelloService)
 		if err := pb.RegisterHelloHandlerServer(ctx, mux, helloService); err != nil {
 			panic(err)
 		}
