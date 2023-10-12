@@ -12,9 +12,9 @@
   - 服务端拦截器
     - unary
     - stream
-- 使用tls进行安全通信
-- 使用etcd实现服务发现与客户端负载均衡
-- grpc-gateway和swagger
+- 使用 tls 进行安全通信
+- 使用 etcd 实现服务发现与客户端负载均衡
+- grpc-gateway 和 swagger
   - unary
   - stream 
 
