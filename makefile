@@ -11,9 +11,7 @@ install2:
 	go install -v google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 
-
 PROTOC := $(shell pwd)/protoc/bin/protoc
-
 
 .PHONY: gen
 gen:
@@ -22,14 +20,15 @@ gen:
 
 .PHONY: tls
 tls:
-	mkdir -p tls && \
+	mkdir -p tls
 	cd tls && \
-	openssl genrsa -out grpc.key 2048 && \
-	openssl req -new -x509 -key grpc.key -out grpc.crt -days 36500 && \
-	openssl req -new -key grpc.key -out grpc.csr && \
-	openssl genpkey -algorithm RSA -out t.key && \
-	openssl req -new -nodes -key t.key -out t.csr -days 3650 -subj "/C=cn/OU=myorg/O=mycomp/CN=myname" -config openssl.cnf -extensions v3_req && \
-	openssl x509 -req -days 3650 -in t.csr -out server.pem -CA grpc.crt -CAkey grpc.key -CAcreateserial -extfile openssl.cnf -extensions v3_req
+	openssl genrsa -out ca.key 2048 && \
+	openssl req -new -key ca.key -out ca.csr && \
+	openssl req -new -x509 -key ca.key -out ca.crt -days 36500 && \
+	openssl genpkey -algorithm RSA -out server.key && \
+	openssl req -new -nodes -key server.key -out server.csr -days 3650 -subj "/C=cn/OU=myorg/O=mycomp/CN=myname" -config openssl.cnf -extensions v3_req && \
+	openssl x509 -req -days 3650 -in server.csr -out server.pem -CA ca.crt -CAkey ca.key -CAcreateserial -extfile openssl.cnf -extensions v3_req
+
 
 .PHONY: up
 up:
@@ -58,9 +57,8 @@ gateway:
 test:
 	go run cmd/client/main.go
 
-.PHONY: test_unary_rpc_rest
+.PHONY: test_unary_rpc_rest  # 需要先启动etcd、grpc server 和 grpc gateway
 test_unary_rpc_rest:
-	# 需要先启动etcd、grpc server 和 grpc gateway
 	curl -X POST -H "Content-Type: application/json" -d  '{"msg":{"fromUsername":"1","toUsername":"2","content":"3"}}' http://localhost:9091/v1/example/hello
 
 .PHONY: test_server_stream_rest

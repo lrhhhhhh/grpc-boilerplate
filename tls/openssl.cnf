@@ -226,7 +226,7 @@ keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
 [ alt_names ]
-DNS.1 = *.liuronghao.com
+DNS.1 = *.example.com
 
 [ v3_ca ]
 
