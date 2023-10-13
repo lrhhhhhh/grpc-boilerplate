@@ -1,58 +1,36 @@
 package main
 
 import (
-	"context"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	pb "grpc-boilerplate/api/pb"
-	"grpc-boilerplate/internal/logic"
+	"grpc-boilerplate/internal/config"
+	"grpc-boilerplate/internal/server"
 	"net"
 	"net/http"
 )
 
-const onlyUnaryRPC = false
-const enableTLS = false
-
 func main() {
-	addr := "0.0.0.0:9091"
-	endpoint := "0.0.0.0:9090"
-	listener, err := net.Listen("tcp", addr)
+	var cfg config.Config
+	cfg.Gateway.Enable = true
+	cfg.Gateway.Addr = "0.0.0.0:9091"
+	cfg.Gateway.Endpoint = "0.0.0.0:9090"
+	cfg.Gateway.OnlyUnaryRPC = false
+	cfg.TLS.Enable = true
+	cfg.TLS.CertFile = "./tls/server.pem"
+	cfg.TLS.KeyFile = "./tls/server.key"
+	cfg.TLS.ServerNameOverride = "*.example.com"
+
+	listener, err := net.Listen("tcp", cfg.Gateway.Addr)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	mux := runtime.NewServeMux()
-
-	if onlyUnaryRPC {
-		// in-process
-		// only for unary rpc
-		helloService := new(logic.HelloService)
-		if err := pb.RegisterHelloHandlerServer(ctx, mux, helloService); err != nil {
-			panic(err)
-		}
-	} else {
-		creds, err := credentials.NewClientTLSFromFile("./tls/server.pem", "*.liuronghao.com")
-		if err != nil {
-			panic(err)
-		}
-		dialOptions := []grpc.DialOption{grpc.WithTransportCredentials(creds)}
-
-		// grpc gateway call grpc server
-		// for example, grpc server's endpoint=0.0.0.0:9090, grpc gateway listen at 0.0.0.0:9091
-		if err := pb.RegisterHelloHandlerFromEndpoint(ctx, mux, endpoint, dialOptions); err != nil {
-			panic(err)
-		}
+	mux, err := server.NewGatewayMux(&cfg)
+	if err != nil {
+		panic(err)
 	}
 
-	if enableTLS {
+	if cfg.Gateway.TLS.Enable {
 		// another cert and key for https
-		certPath := ""
-		keyPath := ""
-		if err := http.ServeTLS(listener, mux, certPath, keyPath); err != nil {
+		if err := http.ServeTLS(listener, mux, cfg.Gateway.TLS.CertFile, cfg.Gateway.TLS.KeyFile); err != nil {
 			panic(err)
 		}
 	} else {

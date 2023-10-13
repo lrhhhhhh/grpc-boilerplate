@@ -6,13 +6,13 @@ import (
 	pb "grpc-boilerplate/api/pb"
 	"grpc-boilerplate/interceptor"
 	"grpc-boilerplate/internal/config"
-	"grpc-boilerplate/internal/logic"
+	"grpc-boilerplate/internal/service"
 )
 
-func NewGRPCServer(c *config.Config) *grpc.Server {
+func NewGRPCServer(c *config.Config) (*grpc.Server, error) {
 	creds, err := credentials.NewServerTLSFromFile(c.TLS.CertFile, c.TLS.KeyFile)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	helloInterceptor := new(interceptor.HelloInterceptor)
@@ -23,8 +23,8 @@ func NewGRPCServer(c *config.Config) *grpc.Server {
 		grpc.StreamInterceptor(helloInterceptor.Stream()),
 	)
 
-	helloService := new(logic.HelloService)
+	helloService := new(service.HelloService)
 	pb.RegisterHelloServer(grpcServer, helloService)
 
-	return grpcServer
+	return grpcServer, nil
 }

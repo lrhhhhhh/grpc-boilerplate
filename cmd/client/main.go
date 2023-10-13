@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	pb "grpc-boilerplate/api/pb"
-	"grpc-boilerplate/etcd"
-	"grpc-boilerplate/interceptor"
+	"grpc-boilerplate/internal/client"
+	"grpc-boilerplate/internal/config"
 	"log"
 	"math/rand"
 	"time"
@@ -109,32 +106,17 @@ func biDirectionalStream(client pb.HelloClient) {
 }
 
 func main() {
-	etcdAddr := "http://localhost:2379"
-	serviceName := "grpc-helloService"
+	var cfg config.Config
+	cfg.Service.Name = "grpc-helloService"
+	cfg.Service.Addr = "0.0.0.0:9090"
+	cfg.TLS.Enable = true
+	cfg.TLS.CertFile = "./tls/server.pem"
+	cfg.TLS.KeyFile = "./tls/server.key"
+	cfg.TLS.ServerNameOverride = "*.example.com"
+	cfg.Discovery.Enable = true
+	cfg.Discovery.Etcd.Addr = "http://localhost:2379"
 
-	etcdConn, err := etcd.New(etcdAddr)
-	if err != nil {
-		panic(err)
-	}
-
-	resolver, err := etcdConn.Resolver()
-	if err != nil {
-		panic(err)
-	}
-
-	helloInterceptor := new(interceptor.HelloInterceptor)
-
-	creds, err := credentials.NewClientTLSFromFile("./tls/server.pem", "*.liuronghao.com")
-	if err != nil {
-		panic(err)
-	}
-
-	conn, err := grpc.Dial(
-		fmt.Sprintf("etcd:///%s", serviceName),
-		grpc.WithResolvers(resolver),
-		grpc.WithTransportCredentials(creds),
-		grpc.WithUnaryInterceptor(helloInterceptor.UnaryClient()),
-	)
+	conn, err := client.NewGRPCClient(&cfg)
 	if err != nil {
 		panic(err)
 	}

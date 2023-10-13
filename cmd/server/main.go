@@ -11,25 +11,34 @@ func main() {
 	var cfg config.Config
 	cfg.Service.Name = "grpc-helloService"
 	cfg.Service.Addr = "0.0.0.0:9090"
+	cfg.TLS.Enable = true
 	cfg.TLS.CertFile = "./tls/server.pem"
-	cfg.TLS.KeyFile = "./tls/t.key"
-	cfg.Etcd.Addr = "http://localhost:2379"
+	cfg.TLS.KeyFile = "./tls/server.key"
+	cfg.TLS.ServerNameOverride = "*.example.com"
+	cfg.Discovery.Enable = true
+	cfg.Discovery.Etcd.Addr = "http://localhost:2379"
 
 	listen, err := net.Listen("tcp", cfg.Service.Addr)
 	if err != nil {
 		panic(err)
 	}
 
-	etcdConn, err := etcd.New(cfg.Etcd.Addr)
+	if cfg.Discovery.Enable {
+		etcdConn, err := etcd.New(cfg.Discovery.Etcd.Addr)
+		if err != nil {
+			panic(err)
+		}
+
+		if err := etcdConn.Register(cfg.Service.Name, cfg.Service.Addr); err != nil {
+			panic(err)
+		}
+	}
+
+	grpcServer, err := server.NewGRPCServer(&cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := etcdConn.Register(cfg.Service.Name, cfg.Service.Addr); err != nil {
-		panic(err)
-	}
-
-	grpcServer := server.NewGRPCServer(&cfg)
 	if err := grpcServer.Serve(listen); err != nil {
 		panic(err)
 	}

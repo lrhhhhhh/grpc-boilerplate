@@ -2,7 +2,15 @@ service:
   name: ""
   addr: ""
 tls:
-  certFile: ""
-  keyFile: ""
-etcd:
-  addr: ""
+  certFile: "../../tls/server.pem"
+  keyFile: "../../tls/server.key"
+  serverNameOverride: "*.example.com"
+  enable: true
+discovery:
+  etcd:
+    addr: "http://localhost:2379"
+  enable: true
+gateway:
+  enable: false
+  enableTLS: false
+  onlyUnaryRPC: true
